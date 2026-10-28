@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account - IPL Auction Simulator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="glass-card p-4 p-md-5">
+        <div class="text-center mb-4">
+          <div class="team-logo-badge mx-auto mb-3" style="background: var(--emerald-gradient); color: #040814; box-shadow: 0 0 20px var(--emerald-glow);">
+            <i class="fa-solid fa-user-plus fs-4"></i>
+          </div>
+          <h2 class="text-white fw-bold mb-1">Create Account</h2>
+          <p class="text-muted small">Join your friends in live multiplayer IPL auctions</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fa-solid fa-user text-emerald"></i>
+              </span>
+              <input type="text" class="form-control" id="username" name="username" placeholder="Choose a username (min 3 chars)" required autofocus>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fa-solid fa-envelope text-emerald"></i>
+              </span>
+              <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fa-solid fa-lock text-emerald"></i>
+              </span>
+              <input type="password" class="form-control" id="password" name="password" placeholder="Min 6 characters" required>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="confirm_password" class="form-label">Confirm Password</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fa-solid fa-shield-halved text-emerald"></i>
+              </span>
+              <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Re-type password" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-gold w-100 py-3 mb-3 shadow">
+            <i class="fa-solid fa-bolt me-2"></i> Register Account
+          </button>
+
+          <div class="text-center text-muted small">
+            Already registered? 
+            <a href="{{ url_for('auth.login') }}" class="text-gold fw-semibold text-decoration-none">Log in here</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

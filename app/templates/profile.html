@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="glass-card p-4 p-md-5 border-warning">
+        <div class="text-center mb-4 pb-3 border-bottom border-secondary">
+          <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ user.username }}&backgroundColor=071a36" alt="Avatar" class="rounded-circle border border-warning p-2 mb-3 shadow" style="width: 100px; height: 100px; background: #071A36;">
+          <h2 class="text-white fw-bold mb-1">{{ user.username }}</h2>
+          <p class="text-muted small mb-0">{{ user.email }}</p>
+          <span class="badge bg-dark border border-warning text-warning mt-2">IPL Franchise Owner</span>
+        </div>
+
+        <div class="row g-3 mb-4 text-center">
+          <div class="col-4">
+            <div class="bg-dark p-3 rounded-3 border border-secondary">
+              <div class="h3 fw-bold text-warning mb-0">{{ user.hosted_auctions|length }}</div>
+              <div class="text-muted small">Hosted</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="bg-dark p-3 rounded-3 border border-secondary">
+              <div class="h3 fw-bold text-white mb-0">{{ user.teams|length }}</div>
+              <div class="text-muted small">Franchises</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="bg-dark p-3 rounded-3 border border-secondary">
+              <div class="h3 fw-bold text-info mb-0">{{ user.bids|length }}</div>
+              <div class="text-muted small">Total Bids</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-dark rounded-3 border border-secondary mb-4 small">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted"><i class="fa-solid fa-calendar me-2"></i>Account Created:</span>
+            <span class="text-white fw-semibold">{{ user.created_at.strftime('%d %B %Y') if user.created_at else '2026' }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted"><i class="fa-solid fa-shield-halved me-2"></i>Status:</span>
+            <span class="text-success fw-semibold"><i class="fa-solid fa-circle-check me-1"></i> Active</span>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('auction.dashboard') }}" class="btn btn-gold flex-grow-1">
+            <i class="fa-solid fa-gauge-high me-1"></i> Dashboard
+          </a>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger">
+            <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

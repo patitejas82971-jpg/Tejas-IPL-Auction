@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IPL Auction 2026</string>
+    <string name="default_server_url">http://10.0.2.2:5000</string>
+    <string name="app_subtitle">Real-Time Multiplayer Auction</string>
+
+    <!-- Offline / Error View -->
+    <string name="connection_error_title">Connection Lost</string>
+    <string name="connection_error_desc">Cannot connect to the IPL Auction server. Ensure the Flask backend is running and check your connection.</string>
+    <string name="btn_retry">Retry Connection</string>
+    <string name="btn_configure_server">Change Server URL</string>
+
+    <!-- Server Configuration Dialog -->
+    <string name="dialog_server_title">IPL Server Configuration</string>
+    <string name="dialog_server_hint">e.g. http://192.168.1.15:5000 or http://10.0.2.2:5000</string>
+    <string name="preset_emulator">Android Emulator (10.0.2.2:5000)</string>
+    <string name="preset_localhost">Localhost (127.0.0.1:5000)</string>
+    <string name="dialog_save">Connect</string>
+    <string name="dialog_cancel">Cancel</string>
+
+    <!-- General -->
+    <string name="exit_prompt">Press back again to exit</string>
+    <string name="download_started">Downloading file...</string>
+    <string name="download_completed">Download complete</string>
+</resources>

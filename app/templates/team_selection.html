@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Select Franchise - {{ room.room_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="glass-card p-4 mb-4 border-warning">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="text-white fw-bold mb-1">Choose Your IPL Franchise</h2>
+        <p class="text-muted small mb-0">Room: <strong class="text-white">{{ room.room_name }}</strong> (Code: <strong class="text-warning">{{ room.room_code }}</strong>)</p>
+      </div>
+      <a href="{{ url_for('auction.lobby', auction_id=room.id) }}" class="btn btn-outline-gold">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Lobby
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for f in available_franchises %}
+      {% set is_my_team = (user_team and user_team.team_code == f.team_code) %}
+      <div class="col-md-6 col-lg-4">
+        <div class="franchise-card p-4 h-100 {% if f.is_taken and not is_my_team %}taken{% elif is_my_team %}selected{% endif %}"
+             data-team-code="{{ f.team_code }}"
+             style="border-top: 5px solid {{ f.primary_color }};">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="team-logo-badge" style="background: {{ f.primary_color }}; color: #FFFFFF;">
+              <i class="fa-solid {{ f.logo_icon }}"></i>
+            </div>
+            <span class="badge bg-dark border border-secondary text-warning">{{ f.team_code }}</span>
+          </div>
+
+          <h4 class="text-white fw-bold mb-1">{{ f.team_name }}</h4>
+          <p class="text-muted small mb-3">City: {{ f.city }} • Titles: {{ f.titles }}</p>
+
+          <div class="p-2 rounded bg-dark border border-secondary mb-3 small">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Purse:</span>
+              <span class="text-warning fw-bold">{{ room.starting_budget|inr }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Max Squad:</span>
+              <span class="text-white fw-bold">{{ room.get_rules().max_squad_size }} players</span>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              {% if is_my_team %}
+                <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i> Your Selection</span>
+              {% elif f.is_taken %}
+                <span class="text-danger small fw-bold">Claimed by {{ f.taken_by }}</span>
+              {% else %}
+                <span class="text-success small fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Available</span>
+              {% endif %}
+            </div>
+
+            {% if not f.is_taken and not is_my_team %}
+              <button class="btn btn-gold btn-sm px-3">
+                Select <i class="fa-solid fa-arrow-right ms-1"></i>
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/teams.js') }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    window.auctionSocket.connect({{ room.id }}, "{{ current_user.username }}");
+    window.teamManager = new TeamManager({{ room.id }}, "{{ user_team.team_code if user_team else '' }}");
+  });
+</script>
+{% endblock %}

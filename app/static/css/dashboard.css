@@ -1,0 +1,197 @@
+/* ==========================================================================
+   🏏 Dashboard, Lobby & Player Pool Styles
+   ========================================================================== */
+
+/* Dashboard Stat Tiles */
+.stat-tile {
+  background: var(--stadium-card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm), var(--rim-highlight);
+}
+
+.stat-tile:hover {
+  border-color: var(--card-hover-border);
+  transform: translateY(-3px);
+  background: var(--stadium-card-hover);
+  box-shadow: var(--shadow-md), var(--shadow-gold), var(--rim-highlight);
+}
+
+.stat-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: rgba(255, 184, 0, 0.14);
+  color: var(--gold);
+  border: 1px solid rgba(255, 184, 0, 0.25);
+  box-shadow: 0 0 15px rgba(255, 184, 0, 0.1);
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-white);
+  line-height: 1.2;
+  font-family: var(--font-heading);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* Franchise Cards (Team Selection & Lobby) */
+.franchise-card {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--stadium-card);
+  border: 1.5px solid var(--card-border-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm), var(--rim-highlight);
+}
+
+.franchise-card:hover:not(.taken) {
+  transform: translateY(-5px);
+  background: var(--stadium-card-hover);
+  border-color: var(--gold);
+  box-shadow: var(--shadow-lg), var(--shadow-gold), var(--rim-highlight);
+}
+
+.franchise-card.selected {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 30px rgba(255, 184, 0, 0.4), var(--rim-highlight);
+  background: var(--stadium-card-hover) !important;
+}
+
+.franchise-card.taken {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(30%);
+}
+
+.franchise-header {
+  padding: 1.25rem 1.25rem 0.75rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.team-logo-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.team-code-pill {
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  letter-spacing: 0.05em;
+}
+
+/* Lobby Participant Chips */
+.participant-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.95rem 1.25rem;
+  border-radius: 14px;
+  background: rgba(7, 17, 36, 0.8);
+  border: 1px solid rgba(255, 184, 0, 0.18);
+  margin-bottom: 0.75rem;
+  transition: var(--transition);
+}
+
+.participant-item:hover {
+  background: rgba(11, 25, 50, 0.9);
+  border-color: rgba(255, 184, 0, 0.45);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.ready {
+  background-color: var(--emerald);
+  box-shadow: 0 0 10px var(--emerald);
+}
+
+.status-dot.not-ready {
+  background-color: var(--crimson);
+  box-shadow: 0 0 10px var(--crimson);
+}
+
+/* Player Database Cards */
+.player-card {
+  background: var(--stadium-card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm), var(--rim-highlight);
+}
+
+.player-card:hover {
+  transform: translateY(-5px);
+  background: var(--stadium-card-hover);
+  border-color: var(--gold);
+  box-shadow: var(--shadow-md), var(--shadow-gold), var(--rim-highlight);
+}
+
+.player-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(7, 17, 36, 0.95);
+  border: 2px solid var(--gold);
+  padding: 4px;
+  object-fit: cover;
+  box-shadow: 0 0 15px rgba(255, 184, 0, 0.25);
+}
+
+.player-rating-circle {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: var(--gold-gradient);
+  border: 2px solid #FFFFFF;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #040814;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}

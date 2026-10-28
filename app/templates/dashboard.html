@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - IPL Auction Simulator{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+  <!-- Welcome Banner -->
+  <div class="glass-card p-4 mb-4 border-warning">
+    <div class="row align-items-center g-3">
+      <div class="col-md-7">
+        <div class="d-flex align-items-center gap-3">
+          <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ user.username }}&backgroundColor=071a36" alt="Avatar" class="rounded-circle border border-warning p-1" style="width: 70px; height: 70px; background: #071A36;">
+          <div>
+            <h2 class="text-white fw-bold mb-1">Welcome, {{ user.username }}!</h2>
+            <p class="text-muted small mb-0">
+              <i class="fa-solid fa-envelope me-1"></i> {{ user.email }} • Member since {{ user.created_at.strftime('%b %Y') if user.created_at else '2026' }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5 text-md-end">
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+          <a href="{{ url_for('auction.create_auction') }}" class="btn btn-gold">
+            <i class="fa-solid fa-plus-circle me-1"></i> Create Auction
+          </a>
+          <a href="{{ url_for('auction.join_auction') }}" class="btn btn-outline-gold">
+            <i class="fa-solid fa-right-to-bracket me-1"></i> Join Room
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Join Code Card -->
+  <div class="glass-card p-3 mb-4">
+    <form action="{{ url_for('auction.join_auction') }}" method="POST" class="row g-2 align-items-center">
+      <div class="col-auto">
+        <span class="fw-bold text-white"><i class="fa-solid fa-ticket text-warning me-2"></i>Quick Join Room:</span>
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <input type="text" name="room_code" class="form-control form-control-sm room-code-input text-uppercase fw-bold" placeholder="e.g. IPL789" required maxlength="8">
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-gold btn-sm px-3">
+          Join Now <i class="fa-solid fa-arrow-right ms-1"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Hosted & Active Auctions -->
+    <div class="col-lg-7">
+      <div class="glass-card p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="text-white fw-bold mb-0">
+            <i class="fa-solid fa-gavel text-warning me-2"></i>Auctions Hosted By You
+          </h4>
+          <span class="badge bg-dark border border-warning text-warning">{{ hosted_auctions|length }} Rooms</span>
+        </div>
+
+        {% if hosted_auctions %}
+          <div class="list-group list-group-flush bg-transparent">
+            {% for room in hosted_auctions %}
+              <div class="list-group-item bg-transparent text-white border-secondary px-0 py-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h5 class="fw-bold mb-1">{{ room.room_name }}</h5>
+                    <div class="d-flex align-items-center gap-2 small">
+                      <span class="badge bg-dark border border-secondary text-warning">Code: {{ room.room_code }}</span>
+                      <button class="btn btn-link btn-sm text-warning p-0 btn-copy-code" data-code="{{ room.room_code }}" title="Copy Room Code">
+                        <i class="fa-regular fa-copy"></i>
+                      </button>
+                      <span class="text-muted">• {{ room.created_at.strftime('%d %b %Y') if room.created_at else '' }}</span>
+                    </div>
+                  </div>
+                  <div>
+                    {% if room.status == 'lobby' %}
+                      <span class="badge bg-secondary px-2 py-1"><i class="fa-solid fa-door-open me-1"></i> Lobby</span>
+                    {% elif room.status == 'active' %}
+                      <span class="badge bg-danger pulse-gold px-2 py-1"><i class="fa-solid fa-circle-dot me-1"></i> Live</span>
+                    {% elif room.status == 'paused' %}
+                      <span class="badge bg-warning text-dark px-2 py-1"><i class="fa-solid fa-pause me-1"></i> Paused</span>
+                    {% else %}
+                      <span class="badge bg-success px-2 py-1"><i class="fa-solid fa-check me-1"></i> Completed</span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-dark">
+                  <div class="small text-muted">
+                    <i class="fa-solid fa-shield-halved me-1"></i> {{ room.teams|length }}/{{ room.max_teams }} Teams Joined
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-stadium btn-sm btn-copy-invite" data-code="{{ room.room_code }}" title="Copy Share Link">
+                      <i class="fa-solid fa-share-nodes"></i>
+                    </button>
+                    {% if room.status == 'lobby' %}
+                      <a href="{{ url_for('auction.lobby', auction_id=room.id) }}" class="btn btn-gold btn-sm">Enter Lobby</a>
+                    {% elif room.status in ['active', 'paused'] %}
+                      <a href="{{ url_for('auction.live_auction', auction_id=room.id) }}" class="btn btn-danger btn-sm">Enter Live Auction</a>
+                      <a href="{{ url_for('auction.host_dashboard', auction_id=room.id) }}" class="btn btn-outline-gold btn-sm">Host Controls</a>
+                    {% else %}
+                      <a href="{{ url_for('auction.results', auction_id=room.id) }}" class="btn btn-outline-gold btn-sm">View Results</a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <i class="fa-solid fa-trophy fs-1 text-muted mb-3 opacity-50"></i>
+            <h5 class="text-white">No auctions hosted yet</h5>
+            <p class="text-muted small">Create your first private IPL Mega Auction room and invite friends!</p>
+            <a href="{{ url_for('auction.create_auction') }}" class="btn btn-gold mt-2">
+              <i class="fa-solid fa-plus-circle me-1"></i> Create Auction Room
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: My Franchises & Teams -->
+    <div class="col-lg-5">
+      <div class="glass-card p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="text-white fw-bold mb-0">
+            <i class="fa-solid fa-shield-halved text-warning me-2"></i>My Franchises
+          </h4>
+          <span class="badge bg-dark border border-warning text-warning">{{ my_teams|length }} Teams</span>
+        </div>
+
+        {% if my_teams %}
+          <div class="d-flex flex-column gap-3">
+            {% for team in my_teams %}
+              <div class="p-3 rounded-3" style="background: rgba(7, 26, 54, 0.7); border-left: 4px solid {{ team.primary_color }}; border-top: 1px solid rgba(255,255,255,0.08); border-right: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge" style="background: {{ team.primary_color }}; color: #FFFFFF;">{{ team.team_code }}</span>
+                    <span class="fw-bold text-white">{{ team.team_name }}</span>
+                  </div>
+                  <span class="badge bg-dark border border-secondary text-warning small">{{ team.auction.room_code }}</span>
+                </div>
+
+                <div class="row g-2 text-center small my-2">
+                  <div class="col-6">
+                    <div class="bg-dark p-2 rounded">
+                      <div class="text-muted">Purse Left</div>
+                      <div class="fw-bold text-warning">{{ team.remaining_budget|inr }}</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="bg-dark p-2 rounded">
+                      <div class="text-muted">Squad</div>
+                      <div class="fw-bold text-white">{{ team.squad_count }} Players</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <span class="text-muted small">
+                    <i class="fa-solid fa-earth-americas me-1"></i> {{ team.overseas_count }} Overseas
+                  </span>
+                  <a href="{{ url_for('team.my_team', auction_id=team.auction_id) }}" class="btn btn-outline-gold btn-sm">
+                    View Squad <i class="fa-solid fa-arrow-right ms-1"></i>
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <i class="fa-solid fa-shield-cat fs-1 text-muted mb-3 opacity-50"></i>
+            <h5 class="text-white">No franchises claimed yet</h5>
+            <p class="text-muted small">Join an auction using a room code to select an IPL team!</p>
+            <a href="{{ url_for('auction.join_auction') }}" class="btn btn-outline-gold mt-2">
+              <i class="fa-solid fa-right-to-bracket me-1"></i> Join Auction
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Official IPL Franchises • Titles Leaderboard (2026 Season) -->
+  <div class="glass-card p-4 mt-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div>
+        <h4 class="text-white fw-bold mb-1">
+          <i class="fa-solid fa-trophy text-warning me-2"></i>Official IPL Franchises • Titles Leaderboard
+        </h4>
+        <p class="text-muted small mb-0">Official team profiles and championship counts for the 2026 season</p>
+      </div>
+      <span class="badge bg-dark border border-warning text-warning px-3 py-2">
+        <i class="fa-solid fa-crown text-warning me-1"></i> 2026 IPL Edition
+      </span>
+    </div>
+
+    <div class="row g-2">
+      {% for f in franchises %}
+        <div class="col-6 col-sm-4 col-md-3 col-lg-2-4" style="flex: 0 0 auto; width: 20%;">
+          <div class="glass-card glass-card-hover p-2 text-center h-100" style="border-top: 3px solid {{ f.primary_color }};">
+            <div class="d-flex justify-content-center align-items-center gap-2 mb-1">
+              <span class="badge" style="background: {{ f.primary_color }}; color: #FFFFFF; font-size: 0.75rem;">{{ f.team_code }}</span>
+              <span class="fw-bold text-white small text-truncate" title="{{ f.team_name }}">{{ f.short_name }}</span>
+            </div>
+            <div class="text-warning small fw-bold">
+              {% if f.titles > 0 %}
+                <i class="fa-solid fa-trophy text-warning me-1"></i>{{ f.titles }} {{ 'Title' if f.titles == 1 else 'Titles' }}
+              {% else %}
+                <span class="text-muted" style="font-size: 0.75rem;">Challenger</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

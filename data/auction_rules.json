@@ -1,0 +1,57 @@
+{
+  "auction_types": {
+    "mega": {
+      "name": "IPL Mega Auction",
+      "starting_budget": 1200000000,
+      "max_teams": 10,
+      "min_squad_size": 18,
+      "max_squad_size": 25,
+      "max_overseas": 8,
+      "timer_duration": 30,
+      "timer_extend_seconds": 15
+    },
+    "mini": {
+      "name": "IPL Mini Auction",
+      "starting_budget": 500000000,
+      "max_teams": 10,
+      "min_squad_size": 18,
+      "max_squad_size": 25,
+      "max_overseas": 8,
+      "timer_duration": 20,
+      "timer_extend_seconds": 10
+    },
+    "custom": {
+      "name": "Custom Auction",
+      "starting_budget": 1000000000,
+      "max_teams": 10,
+      "min_squad_size": 15,
+      "max_squad_size": 25,
+      "max_overseas": 8,
+      "timer_duration": 30,
+      "timer_extend_seconds": 15
+    }
+  },
+  "bid_increments": [
+    {
+      "threshold": 10000000,
+      "increment": 1000000
+    },
+    {
+      "threshold": 20000000,
+      "increment": 2000000
+    },
+    {
+      "threshold": 50000000,
+      "increment": 2500000
+    },
+    {
+      "threshold": 100000000,
+      "increment": 5000000
+    },
+    {
+      "threshold": 9999999999,
+      "increment": 10000000
+    }
+  ],
+  "default_reserve_budget_per_empty_slot": 2000000
+}

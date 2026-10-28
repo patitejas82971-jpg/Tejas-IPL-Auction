@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+
+{% block title %}LIVE AUCTION: {{ room.room_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-2">
+  <!-- Top Navigation / Status Header -->
+  <div class="glass-card px-4 py-3 mb-3 border-warning">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <span class="badge bg-danger pulse-gold px-3 py-2 fs-6">
+          <i class="fa-solid fa-circle-dot me-1"></i> LIVE AUCTION
+        </span>
+        <h4 class="text-white fw-bold mb-0 d-none d-md-block">{{ room.room_name }}</h4>
+        <span class="badge bg-dark border border-secondary text-warning">Code: {{ room.room_code }}</span>
+      </div>
+
+      <!-- User's Franchise Purse Summary -->
+      {% if user_team %}
+        <div class="d-flex align-items-center gap-3 bg-dark px-3 py-2 rounded-3 border border-secondary">
+          <span class="badge" style="background-color: {{ user_team.primary_color }}; color: #FFFFFF;">{{ user_team.team_code }}</span>
+          <span class="fw-bold text-white d-none d-sm-inline">{{ user_team.team_name }}</span>
+          <div class="vr bg-secondary"></div>
+          <div>
+            <span class="text-muted small">Purse:</span>
+            <span class="text-warning fw-bold" id="myTeamRemainingBudget">{{ user_team.remaining_budget|inr }}</span>
+          </div>
+          <div class="vr bg-secondary"></div>
+          <div>
+            <span class="text-muted small">Squad:</span>
+            <span class="text-white fw-bold"><span id="myTeamSquadCount">{{ user_team.squad_count }}</span>/{{ room.get_rules().max_squad_size }}</span>
+          </div>
+          <a href="{{ url_for('team.my_team', auction_id=room.id) }}" target="_blank" class="btn btn-outline-gold btn-sm py-0 px-2" title="Open My Squad">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+      {% endif %}
+
+      <!-- Host Action Buttons -->
+      <div class="d-flex gap-2">
+        {% if is_host %}
+          <button id="btnHostHammer" class="btn btn-success btn-sm fw-bold shadow-sm" title="Strike Gavel: Finalize and Sell to Highest Bidder">
+            <i class="fa-solid fa-gavel me-1"></i> Hammer (Sold)
+          </button>
+          <button id="btnHostUnsold" class="btn btn-outline-danger btn-sm fw-bold" title="Pass Player as Unsold">
+            <i class="fa-solid fa-ban me-1"></i> Unsold (Pass)
+          </button>
+          <button id="btnHostSkip" class="btn btn-stadium btn-sm" title="Skip Current Player">
+            <i class="fa-solid fa-forward-step text-muted me-1"></i> Skip
+          </button>
+        {% endif %}
+        <button class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#poolsModal" title="View 12 Auction Sets across Pools">
+          <i class="fa-solid fa-layer-group"></i>
+          <span class="d-none d-sm-inline">Pools & Sets (12)</span>
+        </button>
+        <button id="btnAiAssistant" class="btn btn-gold btn-sm d-flex align-items-center gap-1">
+          <i class="fa-solid fa-robot"></i>
+          <span>AI Assistant</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Center Column: Auction Stage (Current Player & Bidding Podium) -->
+    <div class="col-lg-8">
+      <div class="auction-stage p-4 position-relative">
+        <!-- Sold / Unsold Celebration Overlay -->
+        <div id="soldOverlay" class="sold-overlay d-none">
+          <div id="soldStamp" class="sold-stamp">SOLD</div>
+          <div id="soldDetails" class="text-center"></div>
+        </div>
+
+        <div class="row align-items-center g-4">
+          <!-- Spotlight Player Details -->
+          <div class="col-md-6 text-center text-md-start">
+            <div class="d-flex flex-column align-items-center align-items-md-start">
+              <div class="spotlight-avatar-wrap">
+                <img id="spotlightPlayerAvatar" src="{{ room.current_player.image_url if room.current_player else '' }}" alt="Player Avatar" class="spotlight-avatar">
+                <div class="spotlight-rating-badge" id="spotlightPlayerRating">
+                  {{ room.current_player.rating if room.current_player else '80' }}
+                </div>
+              </div>
+
+              <!-- Pool, Role, and Set Badges -->
+              <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-start mb-2 align-items-center">
+                <span id="spotlightPlayerPool">
+                  {% if room.current_player and (room.current_player.pool == 'Marquee' or room.current_player.is_marquee) %}
+                    <span class="badge badge-pool badge-marquee"><i class="fa-solid fa-crown me-1"></i> MARQUEE PLAYER</span>
+                  {% elif room.current_player and (room.current_player.pool == 'Uncapped' or room.current_player.is_uncapped) %}
+                    <span class="badge badge-pool badge-uncapped"><i class="fa-solid fa-seedling me-1"></i> UNCAPPED PLAYER</span>
+                  {% else %}
+                    <span class="badge badge-pool badge-capped"><i class="fa-solid fa-star me-1"></i> CAPPED PLAYER</span>
+                  {% endif %}
+                </span>
+
+                <span id="spotlightPlayerRole" class="badge badge-role badge-{{ room.current_player.role|lower|replace(' ', '')|replace('-', '') if room.current_player else 'batsman' }}">
+                  {{ room.current_player.role if room.current_player else 'Batsman' }}
+                </span>
+
+                <span id="spotlightPlayerSet" class="badge badge-set">
+                  <i class="fa-solid fa-layer-group text-warning me-1"></i>
+                  <span id="spotlightPlayerSetText">{{ room.current_player.set_name if room.current_player else 'Marquee Batsmen' }}</span>
+                </span>
+
+                <span id="spotlightPlayerCountry">
+                  {% if room.current_player and room.current_player.is_overseas %}
+                    <span class="badge badge-overseas"><i class="fa-solid fa-earth-americas me-1"></i> {{ room.current_player.country }} (Overseas)</span>
+                  {% else %}
+                    <span class="badge badge-gold"><i class="fa-solid fa-flag me-1"></i> {{ room.current_player.country if room.current_player else 'India' }}</span>
+                  {% endif %}
+                </span>
+              </div>
+
+              <h2 id="spotlightPlayerName" class="spotlight-name">
+                {{ room.current_player.name if room.current_player else 'Awaiting Player...' }}
+              </h2>
+
+              <p id="spotlightPlayerStyle" class="text-muted small mb-3">
+                {{ room.current_player.batting_style if room.current_player else 'Right Handed' }} | {{ room.current_player.bowling_style if room.current_player else 'None' }}
+              </p>
+
+              <div class="bg-dark px-3 py-2 rounded-3 border border-secondary d-inline-block">
+                <span class="text-muted small text-uppercase fw-bold me-2">Base Price:</span>
+                <span id="spotlightBasePrice" class="text-white fw-bold">
+                  {{ room.current_player.base_price|inr if room.current_player else '₹2.00 Cr' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Countdown Timer & Current Bid Podium -->
+          <div class="col-md-6">
+            <div class="d-flex flex-column align-items-center">
+              <!-- Live Status Banner (Pool & Set Progression) -->
+              <div class="auction-status-banner mb-3 d-flex align-items-center justify-content-between px-3 py-2 rounded-3 w-100">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="live-pulse-dot"></span>
+                  <span class="text-warning fw-bold text-uppercase small letter-spacing" id="livePoolSetLabel">
+                    <i class="fa-solid fa-gavel me-1"></i> <span id="currentPoolBadge" class="text-white">{{ room.current_player.pool if room.current_player else (pools_summary.current_pool if pools_summary else 'Marquee') }}</span> • <span id="currentSetBadge" class="text-warning">{{ room.current_player.set_name if room.current_player else (pools_summary.current_set if pools_summary else 'Marquee Batsmen') }}</span>
+                  </span>
+                </div>
+                <button class="badge bg-dark border border-warning text-warning small btn p-1 px-2" data-bs-toggle="modal" data-bs-target="#poolsModal" title="View 12 Auction Sets">
+                  <i class="fa-solid fa-layer-group me-1"></i> 12 Sets
+                </button>
+              </div>
+
+              <!-- Bid Display Podium -->
+              <div class="bid-podium w-100 mb-3">
+                <div class="small text-muted text-uppercase fw-bold letter-spacing">Current Highest Bid</div>
+                <div class="current-bid-amount" id="currentBidDisplay">
+                  {{ room.current_highest_bid|inr if room.current_highest_bid > 0 else '₹0' }}
+                </div>
+                <div id="highestBidderDisplay">
+                  {% if room.highest_bidding_team %}
+                    <div class="highest-bidder-pill" style="border-color: {{ room.highest_bidding_team.primary_color }}; color: #FFFFFF;">
+                      <span class="badge" style="background-color: {{ room.highest_bidding_team.primary_color }}">{{ room.highest_bidding_team.team_code }}</span>
+                      <span>{{ room.highest_bidding_team.team_name }}</span>
+                    </div>
+                  {% else %}
+                    <div class="text-muted fs-6"><i class="fa-regular fa-clock me-1"></i> Waiting for opening bid...</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Primary Bid Now Action Button -->
+              <button id="btnBidMain" class="btn btn-bid-main w-100">
+                <i class="fa-solid fa-gavel me-2"></i> Bid Now (<span id="bidAmountLabel">₹0</span>)
+              </button>
+
+              <!-- Quick Increment Options -->
+              <div class="d-flex gap-2 w-100 mt-2">
+                <button class="btn btn-stadium btn-sm flex-fill btn-quick-bid" data-increment="1000000">+10 Lakh</button>
+                <button class="btn btn-stadium btn-sm flex-fill btn-quick-bid" data-increment="2500000">+25 Lakh</button>
+                <button class="btn btn-stadium btn-sm flex-fill btn-quick-bid" data-increment="5000000">+50 Lakh</button>
+                <button class="btn btn-stadium btn-sm flex-fill btn-quick-bid" data-increment="10000000">+1 Crore</button>
+              </div>
+
+              <!-- Host Auctioneer Hammer Controls -->
+              {% if is_host %}
+                <div class="host-hammer-deck w-100 p-3 mt-3 rounded-3 border border-warning shadow-lg text-center" style="background: linear-gradient(135deg, rgba(245,184,65,0.15), rgba(7,26,54,0.95));">
+                  <div class="d-flex align-items-center justify-content-center gap-2 mb-2 text-warning fw-bold small text-uppercase letter-spacing">
+                    <i class="fa-solid fa-gavel"></i> Auctioneer Gavel Controls
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button id="btnStageHammer" class="btn btn-success flex-fill fw-bold py-2 shadow" title="Strike Gavel and finalize sale">
+                      <i class="fa-solid fa-gavel me-1"></i> Going, Going, SOLD!
+                    </button>
+                    <button id="btnStageUnsold" class="btn btn-outline-danger flex-fill fw-bold py-2" title="Mark this player unsold">
+                      <i class="fa-solid fa-ban me-1"></i> Mark Unsold
+                    </button>
+                  </div>
+                </div>
+              {% else %}
+                <div class="text-center text-muted small mt-2">
+                  <i class="fa-solid fa-clock-rotate-left me-1"></i> Bidding is open! The auctioneer will drop the hammer when all bids are in.
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Live Activity Feed & Participating Teams -->
+    <div class="col-lg-4">
+      <!-- Live Bidding Activity Feed -->
+      <div class="glass-card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary">
+          <h5 class="text-white fw-bold mb-0">
+            <i class="fa-solid fa-bolt text-warning me-2"></i>Live Activity Feed
+          </h5>
+          <span class="badge bg-dark border border-secondary text-muted">Auto-Updating</span>
+        </div>
+        <div id="liveFeedContainer" class="live-feed-box">
+          <div class="feed-item info">
+            <span>Welcome to the Auction Room. Live bids will stream here.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Participating Franchises Mini Standings -->
+      <div class="glass-card p-3">
+        <h5 class="text-white fw-bold mb-3 pb-2 border-bottom border-secondary d-flex justify-content-between">
+          <span><i class="fa-solid fa-shield-halved text-warning me-2"></i>Teams in Room</span>
+          <span class="badge bg-dark border border-warning text-warning">{{ room.teams|length }} Teams</span>
+        </h5>
+        <div class="d-flex flex-column gap-2" style="max-height: 220px; overflow-y: auto;">
+          {% for t in room.teams %}
+            <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background: rgba(7, 26, 54, 0.6); border-left: 3px solid {{ t.primary_color }};">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge" style="background-color: {{ t.primary_color }};">{{ t.team_code }}</span>
+                <span class="fw-bold text-white small">{{ t.team_name }}</span>
+              </div>
+              <div class="text-end">
+                <div class="text-warning small fw-bold">{{ t.remaining_budget|inr }}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">{{ t.squad_count }} players</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gemini AI Strategy Assistant Modal -->
+<div class="modal fade" id="aiModal" tabindex="-1" aria-labelledby="aiModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content glass-card border-warning text-white" style="background: #071A36;">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title d-flex align-items-center gap-2" id="aiModalLabel">
+          <i class="fa-solid fa-robot text-warning"></i>
+          <span>Gemini AI Auction Strategist</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- AI Loading Spinner -->
+        <div id="aiLoading" class="text-center py-4">
+          <div class="spinner-border text-warning" role="status">
+            <span class="visually-hidden">Loading insights...</span>
+          </div>
+          <div class="text-muted small mt-2">Analyzing player stats & tactical squad fit...</div>
+        </div>
+
+        <!-- AI Content Result -->
+        <div id="aiContent" class="d-none">
+          <div id="aiNotice" class="text-warning small fst-italic mb-3"></div>
+
+          <div class="p-3 bg-dark rounded-3 border border-secondary mb-3">
+            <div class="small text-muted text-uppercase fw-bold">Recommended Bid Range</div>
+            <div id="aiRecommendedRange" class="h4 text-warning fw-bold mb-0"></div>
+          </div>
+
+          <div class="mb-3">
+            <h6 class="text-warning fw-bold mb-1">Key Strengths & Impact</h6>
+            <ul id="aiStrengthsList" class="list-unstyled small text-light mb-0"></ul>
+          </div>
+
+          <div class="mb-3">
+            <h6 class="text-warning fw-bold mb-1">Squad Fit</h6>
+            <p id="aiSquadFit" class="text-muted small mb-0"></p>
+          </div>
+
+          <div class="p-2 rounded bg-dark border border-secondary">
+            <span class="small text-muted fw-bold">Coach Verdict:</span>
+            <span id="aiVerdict" class="small text-white"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="button" class="btn btn-stadium" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Auction Pools & Sets Modal -->
+<div class="modal fade" id="poolsModal" tabindex="-1" aria-labelledby="poolsModalLabel" aria-hidden="true" style="z-index: 1060;">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content glass-card border-warning text-white" style="background: #071A36;">
+      <div class="modal-header border-secondary">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fa-solid fa-layer-group text-warning fs-5"></i>
+          <div>
+            <h5 class="modal-title fw-bold mb-0" id="poolsModalLabel">IPL Mega Auction Pools & Sets</h5>
+            <div class="text-muted small">300 Players organized into 12 structured sets across Marquee, Capped & Uncapped pools</div>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- 3 Pools Overview Cards -->
+        <div class="row g-2 mb-4">
+          <div class="col-md-4">
+            <div class="p-3 rounded-3 h-100" style="background: rgba(255, 215, 0, 0.12); border: 1.5px solid rgba(255, 215, 0, 0.4);">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge badge-pool badge-marquee"><i class="fa-solid fa-crown me-1"></i> MARQUEE</span>
+                <span class="text-warning fw-bold">{{ pools_summary.pools.Marquee.total if pools_summary else 37 }} Players</span>
+              </div>
+              <div class="text-white small fw-bold">Premier World Icons</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Sets 1 to 4: Batsmen, All-rounders, Keepers, Bowlers</div>
+              <div class="d-flex justify-content-between mt-2 pt-2 border-top border-secondary text-muted small">
+                <span>Sold: <strong class="text-success">{{ pools_summary.pools.Marquee.sold if pools_summary else 0 }}</strong></span>
+                <span>Unsold: <strong class="text-danger">{{ pools_summary.pools.Marquee.unsold if pools_summary else 0 }}</strong></span>
+                <span>Pending: <strong class="text-warning">{{ pools_summary.pools.Marquee.pending if pools_summary else 37 }}</strong></span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded-3 h-100" style="background: rgba(14, 165, 233, 0.12); border: 1.5px solid rgba(14, 165, 233, 0.4);">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge badge-pool badge-capped"><i class="fa-solid fa-star me-1"></i> CAPPED</span>
+                <span class="text-info fw-bold">{{ pools_summary.pools.Capped.total if pools_summary else 188 }} Players</span>
+              </div>
+              <div class="text-white small fw-bold">International & National Stars</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Sets 5 to 8: Batsmen, All-rounders, Keepers, Bowlers</div>
+              <div class="d-flex justify-content-between mt-2 pt-2 border-top border-secondary text-muted small">
+                <span>Sold: <strong class="text-success">{{ pools_summary.pools.Capped.sold if pools_summary else 0 }}</strong></span>
+                <span>Unsold: <strong class="text-danger">{{ pools_summary.pools.Capped.unsold if pools_summary else 0 }}</strong></span>
+                <span>Pending: <strong class="text-warning">{{ pools_summary.pools.Capped.pending if pools_summary else 188 }}</strong></span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded-3 h-100" style="background: rgba(16, 185, 129, 0.12); border: 1.5px solid rgba(16, 185, 129, 0.4);">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge badge-pool badge-uncapped"><i class="fa-solid fa-seedling me-1"></i> UNCAPPED</span>
+                <span class="text-success fw-bold">{{ pools_summary.pools.Uncapped.total if pools_summary else 75 }} Players</span>
+              </div>
+              <div class="text-white small fw-bold">Emerging Domestic Prodigies</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Sets 9 to 12: Batsmen, All-rounders, Keepers, Bowlers</div>
+              <div class="d-flex justify-content-between mt-2 pt-2 border-top border-secondary text-muted small">
+                <span>Sold: <strong class="text-success">{{ pools_summary.pools.Uncapped.sold if pools_summary else 0 }}</strong></span>
+                <span>Unsold: <strong class="text-danger">{{ pools_summary.pools.Uncapped.unsold if pools_summary else 0 }}</strong></span>
+                <span>Pending: <strong class="text-warning">{{ pools_summary.pools.Uncapped.pending if pools_summary else 75 }}</strong></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12 Sets Table with Status -->
+        <h6 class="text-warning fw-bold mb-2"><i class="fa-solid fa-list-ol me-2"></i>Mega Auction Sets Progression</h6>
+        <div class="table-responsive">
+          <table class="table table-dark table-hover align-middle mb-0" style="font-size: 0.85rem;">
+            <thead>
+              <tr class="text-muted">
+                <th>Set #</th>
+                <th>Set Name</th>
+                <th>Pool</th>
+                <th>Role</th>
+                <th>Total</th>
+                <th>Sold</th>
+                <th>Unsold</th>
+                <th>Pending</th>
+                {% if is_host %}<th>Action</th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% if pools_summary and pools_summary.sets %}
+                {% for s in pools_summary.sets %}
+                  {% set is_active = (pools_summary.current_set == s.set_name) %}
+                  <tr class="{% if is_active %}table-active border-warning{% endif %}">
+                    <td class="fw-bold {% if is_active %}text-warning{% else %}text-muted{% endif %}">
+                      {% if is_active %}<i class="fa-solid fa-gavel text-warning me-1"></i>{% endif %}
+                      Set {{ loop.index }}
+                    </td>
+                    <td class="fw-bold text-white">{{ s.set_name }}</td>
+                    <td>
+                      {% if 'Marquee' in s.set_name %}
+                        <span class="badge badge-pool badge-marquee py-1 px-2" style="font-size: 0.7rem;">Marquee</span>
+                      {% elif 'Uncapped' in s.set_name %}
+                        <span class="badge badge-pool badge-uncapped py-1 px-2" style="font-size: 0.7rem;">Uncapped</span>
+                      {% else %}
+                        <span class="badge badge-pool badge-capped py-1 px-2" style="font-size: 0.7rem;">Capped</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if 'Batsmen' in s.set_name %}
+                        <span class="badge badge-role badge-batsman py-0 px-2" style="font-size: 0.7rem;">Batsman</span>
+                      {% elif 'Bowlers' in s.set_name %}
+                        <span class="badge badge-role badge-bowler py-0 px-2" style="font-size: 0.7rem;">Bowler</span>
+                      {% elif 'All-rounders' in s.set_name %}
+                        <span class="badge badge-role badge-allrounder py-0 px-2" style="font-size: 0.7rem;">All-rounder</span>
+                      {% else %}
+                        <span class="badge badge-role badge-wicketkeeper py-0 px-2" style="font-size: 0.7rem;">Keeper</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-white">{{ s.total }}</td>
+                    <td class="text-success fw-bold">{{ s.sold }}</td>
+                    <td class="text-danger">{{ s.unsold }}</td>
+                    <td class="text-warning">{{ s.pending }}</td>
+                    {% if is_host %}
+                      <td>
+                        {% if s.pending > 0 and not is_active %}
+                          <button class="btn btn-outline-warning btn-sm py-0 px-2 btn-jump-set" data-set-name="{{ s.set_name }}" title="Jump to auction this set next">
+                            Jump Next
+                          </button>
+                        {% elif is_active %}
+                          <span class="badge bg-warning text-dark">ACTIVE</span>
+                        {% else %}
+                          <span class="text-muted small">Done</span>
+                        {% endif %}
+                      </td>
+                    {% endif %}
+                  </tr>
+                {% endfor %}
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="button" class="btn btn-stadium" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/auction.js') }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    window.liveAuctionManager = new LiveAuctionManager({
+      roomId: {{ room.id }},
+      userTeamId: {{ user_team.id if user_team else 'null' }},
+      userTeamCode: "{{ user_team.team_code if user_team else '' }}",
+      username: "{{ current_user.username }}",
+      isHost: {{ 'true' if is_host else 'false' }}
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+# Ignore Android native app
+android/
+*.apk
+*.aab
+
+# Ignore Python cache & virtual environment
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+
+# Ignore local database & logs
+*.db
+*.sqlite
+*.sqlite3
+instance/
+*.log
+
+# Ignore IDE & OS metadata
+.git/
+.gitignore
+.env
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Documentation & Scratch
+scratch/
+README.md
+LICENSE
+Dockerfile
+render.yaml
+Procfile

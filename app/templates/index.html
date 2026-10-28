@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Real-Time Multiplayer IPL Auction Simulator{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Hero War Room Section -->
+  <div class="row align-items-center mb-5 g-4 py-3">
+    <div class="col-lg-7">
+      <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-warning mb-3 shadow-sm">
+        <span class="status-dot active"></span>
+        <span class="small fw-bold text-gradient-gold text-uppercase letter-spacing">IPL MEGA AUCTION 2026 EDITION</span>
+      </div>
+      <h1 class="display-3 fw-black text-white lh-1 mb-3">
+        ENTER THE <span class="text-gradient-gold">AUCTION WAR ROOM</span>
+      </h1>
+      <p class="lead text-light opacity-90 mb-4" style="max-width: 620px; font-size: 1.15rem; line-height: 1.6;">
+        Host private multiplayer auction tables, invite 2–10 friends, claim your dream IPL franchises, and battle in real-time synchronized bidding for over 115+ cricket superstars!
+      </p>
+      
+      <div class="d-flex flex-wrap gap-3">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('auction.create_auction') }}" class="btn btn-gold btn-lg px-4 py-3 d-flex align-items-center gap-2 shadow-lg">
+            <i class="fa-solid fa-plus-circle fs-5"></i>
+            <span>Create Auction Room</span>
+          </a>
+          <a href="{{ url_for('auction.join_auction') }}" class="btn btn-cyan btn-lg px-4 py-3 d-flex align-items-center gap-2 shadow-lg">
+            <i class="fa-solid fa-right-to-bracket fs-5"></i>
+            <span>Join With Code</span>
+          </a>
+        {% else %}
+          <a href="{{ url_for('auth.register') }}" class="btn btn-gold btn-lg px-4 py-3 d-flex align-items-center gap-2 shadow-lg">
+            <i class="fa-solid fa-bolt fs-5"></i>
+            <span>Get Started Free</span>
+          </a>
+          <a href="{{ url_for('auth.login') }}" class="btn btn-stadium btn-lg px-4 py-3">
+            <span>Log In</span>
+          </a>
+        {% endif %}
+        <a href="{{ url_for('player.players_page') }}" class="btn btn-stadium btn-lg px-4 py-3">
+          <i class="fa-solid fa-list text-gold me-1"></i> Player Pool
+        </a>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <!-- Live Arena Mockup Card -->
+      <div class="glass-card p-4 position-relative overflow-hidden" style="border: 1.5px solid rgba(255, 184, 0, 0.45); box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 30px rgba(255, 184, 0, 0.15);">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-secondary">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-danger pulse-gold px-2 py-1"><i class="fa-solid fa-circle-dot me-1"></i> LIVE NOW</span>
+            <span class="text-white fw-bold">LOT #101 • MARQUEE SET</span>
+          </div>
+          <div class="badge bg-dark border border-warning text-warning px-3 py-1">
+            <i class="fa-solid fa-stopwatch me-1"></i> 20s
+          </div>
+        </div>
+
+        <div class="text-center py-2">
+          <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Virat_Kohli&backgroundColor=071a36" alt="Player Avatar" class="rounded-circle border border-warning p-1 mb-2 shadow" style="width: 105px; height: 105px; background: #071A36; box-shadow: 0 0 25px rgba(255, 184, 0, 0.35);">
+          <h3 class="fw-bold text-white mb-1">Virat Kohli</h3>
+          <div class="d-flex justify-content-center gap-2 mb-3">
+            <span class="badge badge-batsman">BATSMAN</span>
+            <span class="badge badge-gold"><i class="fa-solid fa-star me-1"></i> 97</span>
+            <span class="badge badge-gold"><i class="fa-solid fa-flag me-1"></i> INDIA</span>
+          </div>
+        </div>
+
+        <div class="bg-dark p-3 rounded-3 border border-secondary mb-3 text-center" style="background: rgba(4, 8, 20, 0.9) !important;">
+          <div class="small text-muted text-uppercase fw-bold">Current Highest Bid</div>
+          <div class="h2 fw-black text-warning mb-1" style="font-family: var(--font-heading); letter-spacing: -0.02em;">₹18.50 Cr</div>
+          <div class="badge px-3 py-1 fs-6" style="background: #E10600; color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.3);">
+            <i class="fa-solid fa-shield-halved me-1"></i> Royal Challengers Bengaluru
+          </div>
+        </div>
+
+        <button class="btn btn-gold w-100 py-3 shadow" disabled style="opacity: 0.9;">
+          <i class="fa-solid fa-gavel me-2"></i> Bid Now (₹19.50 Cr)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric Badges Bento Grid -->
+  <div class="row g-3 mb-5">
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div>
+          <div class="stat-value">10</div>
+          <div class="stat-label">Franchises</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon" style="color: var(--cyan); border-color: rgba(0, 240, 255, 0.3); background: rgba(0, 240, 255, 0.12);"><i class="fa-solid fa-users"></i></div>
+        <div>
+          <div class="stat-value">{{ total_players_count or '115+' }}</div>
+          <div class="stat-label">Players Pool</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon" style="color: var(--emerald); border-color: rgba(0, 230, 118, 0.3); background: rgba(0, 230, 118, 0.12);"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+        <div>
+          <div class="stat-value">₹120 Cr</div>
+          <div class="stat-label">Salary Purse</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon" style="color: var(--crimson); border-color: rgba(255, 46, 99, 0.3); background: rgba(255, 46, 99, 0.12);"><i class="fa-solid fa-robot"></i></div>
+        <div>
+          <div class="stat-value">Gemini</div>
+          <div class="stat-label">AI Strategist</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10 IPL Franchises Showcase (Responsive Grid Layout) -->
+  <div class="mb-5">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <h2 class="text-white fw-bold mb-1">Official IPL Franchises</h2>
+        <p class="text-muted mb-0">Select your favorite franchise in private war rooms with friends</p>
+      </div>
+    </div>
+
+    <div class="franchise-grid">
+      {% set all_franchises = franchises if franchises else [
+        {'team_code': 'CSK', 'team_name': 'Chennai Super Kings', 'primary_color': '#F5B800', 'logo_icon': 'fa-shield-halved', 'titles': 5},
+        {'team_code': 'MI', 'team_name': 'Mumbai Indians', 'primary_color': '#004BA0', 'logo_icon': 'fa-hurricane', 'titles': 5},
+        {'team_code': 'RCB', 'team_name': 'Royal Challengers Bengaluru', 'primary_color': '#E10600', 'logo_icon': 'fa-shield-cat', 'titles': 2},
+        {'team_code': 'KKR', 'team_name': 'Kolkata Knight Riders', 'primary_color': '#3A225D', 'logo_icon': 'fa-shield', 'titles': 3},
+        {'team_code': 'SRH', 'team_name': 'Sunrisers Hyderabad', 'primary_color': '#FF822A', 'logo_icon': 'fa-sun', 'titles': 1},
+        {'team_code': 'RR', 'team_name': 'Rajasthan Royals', 'primary_color': '#EA1A85', 'logo_icon': 'fa-crown', 'titles': 1},
+        {'team_code': 'DC', 'team_name': 'Delhi Capitals', 'primary_color': '#17479E', 'logo_icon': 'fa-monument', 'titles': 0},
+        {'team_code': 'PBKS', 'team_name': 'Punjab Kings', 'primary_color': '#D71920', 'logo_icon': 'fa-shield', 'titles': 0},
+        {'team_code': 'GT', 'team_name': 'Gujarat Titans', 'primary_color': '#1C2833', 'logo_icon': 'fa-bolt-lightning', 'titles': 1},
+        {'team_code': 'LSG', 'team_name': 'Lucknow Super Giants', 'primary_color': '#0090D0', 'logo_icon': 'fa-dove', 'titles': 0}
+      ] %}
+
+      {% for f in all_franchises %}
+        {% set f_code = f.team_code if f.team_code is defined else f.code %}
+        {% set f_name = f.team_name if f.team_name is defined else f.name %}
+        {% set f_color = f.primary_color if f.primary_color is defined else f.color %}
+        {% set f_icon = f.logo_icon if f.logo_icon is defined else f.icon %}
+        <div class="glass-card glass-card-hover p-3 text-center position-relative" style="border-top: 4px solid {{ f_color }};">
+          <div class="team-logo-badge mx-auto mb-2" style="background: {{ f_color }}; color: #FFFFFF;">
+            <i class="fa-solid {{ f_icon }}"></i>
+          </div>
+          <div class="fw-bold text-white small text-truncate" title="{{ f_name }}">{{ f_name }}</div>
+          <div class="badge bg-dark border border-secondary mt-1">{{ f_code }}</div>
+          <div class="text-warning small mt-2">
+            {% if f.titles > 0 %}
+              <i class="fa-solid fa-trophy text-gold"></i> {{ f.titles }} {{ 'Title' if f.titles == 1 else 'Titles' }}
+            {% else %}
+              <span class="text-muted">Challenger</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- How It Works & War Room Flow -->
+  <div class="row g-4 mt-2">
+    <div class="col-md-4">
+      <div class="glass-card p-4 h-100">
+        <div class="stat-icon mb-3" style="color: var(--gold);"><i class="fa-solid fa-gamepad"></i></div>
+        <h4 class="text-white fw-bold mb-2">1. Create or Join Room</h4>
+        <p class="text-muted mb-0">
+          Generate a 6-character room code or invitation link. 2 to 10 friends join the private war room from their laptops or mobile phones.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="glass-card p-4 h-100">
+        <div class="stat-icon mb-3" style="color: var(--cyan);"><i class="fa-solid fa-shield-halved"></i></div>
+        <h4 class="text-white fw-bold mb-2">2. Claim Your Franchise</h4>
+        <p class="text-muted mb-0">
+          Pick from CSK, MI, RCB, KKR, and more. Manage your official ₹120 Crore budget, squad minimums, and 8 overseas player limit in real time.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="glass-card p-4 h-100">
+        <div class="stat-icon mb-3" style="color: var(--emerald);"><i class="fa-solid fa-gavel"></i></div>
+        <h4 class="text-white fw-bold mb-2">3. Live Auction Engine</h4>
+        <p class="text-muted mb-0">
+          Bid under pressure with server-authoritative 30s timers, live audio gavel strikes, bid increments, and Gemini AI tactical insights.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

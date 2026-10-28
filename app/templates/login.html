@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Login - IPL Auction Simulator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="glass-card p-4 p-md-5">
+        <div class="text-center mb-4">
+          <div class="team-logo-badge mx-auto mb-3" style="background: var(--gold-gradient); color: #040814; box-shadow: 0 0 20px var(--gold-glow);">
+            <i class="fa-solid fa-lock fs-4"></i>
+          </div>
+          <h2 class="text-white fw-bold mb-1">Welcome Back</h2>
+          <p class="text-muted small">Sign in to enter your IPL Auction franchise war rooms</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
+          <div class="mb-3">
+            <label for="username_or_email" class="form-label">Username or Email</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fa-solid fa-user text-gold"></i>
+              </span>
+              <input type="text" class="form-control" id="username_or_email" name="username_or_email" placeholder="Enter username or email" required autofocus>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <label for="password" class="form-label">Password</label>
+            </div>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fa-solid fa-key text-gold"></i>
+              </span>
+              <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-gold w-100 py-3 mb-3 shadow">
+            <i class="fa-solid fa-arrow-right-to-bracket me-2"></i> Log In
+          </button>
+
+          <div class="text-center text-muted small">
+            Don't have an account? 
+            <a href="{{ url_for('auth.register') }}" class="text-gold fw-semibold text-decoration-none">Register here</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

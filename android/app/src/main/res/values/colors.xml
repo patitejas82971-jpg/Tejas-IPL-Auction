@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- IPL Cricket Premium Dark Theme Colors -->
+    <color name="primary">#F5B841</color>
+    <color name="primary_variant">#D99B26</color>
+    <color name="on_primary">#0A0E27</color>
+
+    <color name="secondary">#00E676</color>
+    <color name="secondary_variant">#00B359</color>
+    <color name="on_secondary">#0A0E27</color>
+
+    <color name="background">#0A0E27</color>
+    <color name="on_background">#FFFFFF</color>
+
+    <color name="surface">#141A3C</color>
+    <color name="surface_variant">#1F2756</color>
+    <color name="on_surface">#E0E6ED</color>
+    <color name="on_surface_muted">#8E9AB0</color>
+
+    <color name="accent_gold">#F5B841</color>
+    <color name="accent_blue">#00D2FF</color>
+    <color name="accent_red">#FF4D4D</color>
+    <color name="accent_orange">#FF7A00</color>
+
+    <color name="status_bar">#070A1E</color>
+    <color name="nav_bar">#0A0E27</color>
+    <color name="divider">#2A356A</color>
+</resources>

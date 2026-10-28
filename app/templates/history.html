@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Auction History - IPL Auction Simulator{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="glass-card p-4 mb-4 border-warning">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="text-white fw-bold mb-1">
+          <i class="fa-solid fa-clock-rotate-left text-warning me-2"></i>Auction History
+        </h2>
+        <p class="text-muted small mb-0">Revisit past auctions you hosted or participated in</p>
+      </div>
+      <a href="{{ url_for('auction.create_auction') }}" class="btn btn-gold btn-sm">
+        <i class="fa-solid fa-plus-circle me-1"></i> New Auction
+      </a>
+    </div>
+  </div>
+
+  <div class="glass-card p-4">
+    {% if auctions %}
+      <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0">
+          <thead>
+            <tr class="text-muted small">
+              <th>Auction Room</th>
+              <th>Room Code</th>
+              <th>Type</th>
+              <th>Host</th>
+              <th>Teams</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in auctions %}
+              <tr>
+                <td>
+                  <span class="fw-bold text-white">{{ a.room_name }}</span>
+                </td>
+                <td>
+                  <span class="badge bg-dark border border-secondary text-warning">{{ a.room_code }}</span>
+                </td>
+                <td class="text-uppercase small">{{ a.auction_type }}</td>
+                <td>
+                  {% if a.host_id == current_user.id %}
+                    <span class="badge bg-warning text-dark">You (Host)</span>
+                  {% else %}
+                    <span class="text-muted">{{ a.host.username }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ a.teams|length }}/{{ a.max_teams }}</td>
+                <td>
+                  {% if a.status == 'lobby' %}
+                    <span class="badge bg-secondary">Lobby</span>
+                  {% elif a.status == 'active' %}
+                    <span class="badge bg-danger pulse-gold">Live</span>
+                  {% elif a.status == 'paused' %}
+                    <span class="badge bg-warning text-dark">Paused</span>
+                  {% else %}
+                    <span class="badge bg-success">Completed</span>
+                  {% endif %}
+                </td>
+                <td class="text-muted small">{{ a.created_at.strftime('%d %b %Y') if a.created_at else '' }}</td>
+                <td>
+                  <div class="d-flex gap-1">
+                    {% if a.status == 'completed' %}
+                      <a href="{{ url_for('auction.results', auction_id=a.id) }}" class="btn btn-outline-gold btn-sm">
+                        Results
+                      </a>
+                    {% elif a.status in ['active', 'paused'] %}
+                      <a href="{{ url_for('auction.live_auction', auction_id=a.id) }}" class="btn btn-danger btn-sm">
+                        Enter
+                      </a>
+                    {% else %}
+                      <a href="{{ url_for('auction.lobby', auction_id=a.id) }}" class="btn btn-gold btn-sm">
+                        Lobby
+                      </a>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fa-solid fa-box-open fs-1 text-muted mb-3 opacity-50"></i>
+        <h5 class="text-white">No auction history yet</h5>
+        <p class="text-muted small">Create or join an auction room to start playing with friends!</p>
+        <a href="{{ url_for('auction.create_auction') }}" class="btn btn-gold mt-2">
+          Create Auction Room
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

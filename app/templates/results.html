@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Final Results: {{ room.room_name }} - IPL Auction Simulator{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+  <!-- Results Banner -->
+  <div class="glass-card p-4 mb-4 border-warning text-center position-relative overflow-hidden">
+    <div class="mb-2">
+      <span class="badge bg-success px-3 py-2 fs-6"><i class="fa-solid fa-trophy me-1"></i> AUCTION CONCLUDED</span>
+    </div>
+    <h1 class="display-5 fw-black text-white mb-2">{{ summary.room_name }}</h1>
+    <p class="text-muted mb-3">Room Code: <strong class="text-warning">{{ summary.room_code }}</strong> • Completed: {{ summary.created_at }}</p>
+
+    <!-- Export Buttons -->
+    <div class="d-flex justify-content-center gap-2">
+      <a href="{{ url_for('auction.export_csv', auction_id=room.id) }}" class="btn btn-outline-gold btn-sm">
+        <i class="fa-solid fa-file-csv me-1"></i> Export Squads CSV
+      </a>
+      <a href="{{ url_for('auction.export_json', auction_id=room.id) }}" class="btn btn-outline-gold btn-sm">
+        <i class="fa-solid fa-file-code me-1"></i> Export JSON
+      </a>
+      <a href="{{ url_for('auction.dashboard') }}" class="btn btn-stadium btn-sm">
+        <i class="fa-solid fa-gauge-high me-1"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Aggregate Metrics -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon"><i class="fa-solid fa-handshake"></i></div>
+        <div>
+          <div class="stat-value text-success">{{ summary.total_players_sold }}</div>
+          <div class="stat-label">Players Sold</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon"><i class="fa-solid fa-ban"></i></div>
+        <div>
+          <div class="stat-value text-danger">{{ summary.total_unsold_players }}</div>
+          <div class="stat-label">Unsold Players</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+        <div>
+          <div class="stat-value text-warning">{{ summary.total_spent_formatted }}</div>
+          <div class="stat-label">Total Spent</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon"><i class="fa-solid fa-crown"></i></div>
+        <div>
+          <div class="stat-value text-white fs-4 text-truncate" title="{{ summary.highest_purchase.player_name if summary.highest_purchase else 'N/A' }}">
+            {{ summary.highest_purchase.amount_formatted if summary.highest_purchase else '₹0' }}
+          </div>
+          <div class="stat-label">Top Buy: {{ summary.highest_purchase.player_name if summary.highest_purchase else 'None' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Comparison Table -->
+  <div class="glass-card p-4 mb-4">
+    <h4 class="text-white fw-bold mb-3">
+      <i class="fa-solid fa-scale-balanced text-warning me-2"></i>Franchise Spending & Roster Comparison
+    </h4>
+
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle mb-0">
+        <thead>
+          <tr class="text-muted small">
+            <th>Franchise</th>
+            <th>Owner</th>
+            <th>Squad Size</th>
+            <th>Overseas</th>
+            <th>Role Balance (Bat/Bowl/AR/WK)</th>
+            <th>Purse Spent</th>
+            <th>Remaining Purse</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in summary.teams %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge" style="background-color: {{ t.primary_color }};">{{ t.team_code }}</span>
+                  <span class="fw-bold text-white">{{ t.team_name }}</span>
+                </div>
+              </td>
+              <td class="text-muted">{{ t.owner_name }}</td>
+              <td class="fw-bold text-white">{{ t.squad_count }}</td>
+              <td>
+                <span class="badge badge-overseas">{{ t.overseas_count }}/8</span>
+              </td>
+              <td>
+                <div class="small">
+                  <span class="badge badge-batsman">{{ t.roles.Batsman or 0 }} Bat</span>
+                  <span class="badge badge-bowler">{{ t.roles.Bowler or 0 }} Bowl</span>
+                  <span class="badge badge-allrounder">{{ t.roles['All-rounder'] or 0 }} AR</span>
+                  <span class="badge badge-wicketkeeper">{{ t.roles.Wicketkeeper or 0 }} WK</span>
+                </div>
+              </td>
+              <td class="text-white fw-bold">{{ t.spent_budget_formatted }}</td>
+              <td class="text-warning fw-bold">{{ t.remaining_budget_formatted }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Team-Wise Signed Squads Accordion -->
+  <div class="glass-card p-4">
+    <h4 class="text-white fw-bold mb-3">
+      <i class="fa-solid fa-users text-warning me-2"></i>Final Squad Rosters
+    </h4>
+
+    <div class="accordion accordion-flush" id="squadsAccordion">
+      {% for t in summary.teams %}
+        <div class="accordion-item bg-dark border-secondary">
+          <h2 class="accordion-header" id="heading_{{ t.team_id }}">
+            <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ t.team_id }}" aria-expanded="false" aria-controls="collapse_{{ t.team_id }}">
+              <span class="badge me-2" style="background-color: {{ t.primary_color }};">{{ t.team_code }}</span>
+              <strong class="me-2">{{ t.team_name }}</strong>
+              <span class="text-muted small">({{ t.squad|length }} players, Spent: {{ t.spent_budget_formatted }})</span>
+            </button>
+          </h2>
+          <div id="collapse_{{ t.team_id }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ t.team_id }}" data-bs-parent="#squadsAccordion">
+            <div class="accordion-body bg-dark">
+              {% if t.squad %}
+                <div class="table-responsive">
+                  <table class="table table-dark table-sm table-hover mb-0">
+                    <thead>
+                      <tr class="text-muted small">
+                        <th>Player</th>
+                        <th>Role</th>
+                        <th>Country</th>
+                        <th>Price Paid</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for item in t.squad %}
+                        <tr>
+                          <td class="fw-bold text-white">{{ item.player.name if item.player else 'N/A' }}</td>
+                          <td>
+                            <span class="badge badge-role badge-{{ item.player.role|lower|replace(' ', '')|replace('-', '') if item.player else 'batsman' }}">
+                              {{ item.player.role if item.player else '' }}
+                            </span>
+                          </td>
+                          <td class="text-muted">{{ item.player.country if item.player else '' }}</td>
+                          <td class="text-warning fw-bold">{{ item.purchase_price_formatted }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-muted small">No players acquired during this auction.</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

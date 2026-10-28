@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block title %}Host Control Panel - {{ room.room_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+  <!-- Host Control Header -->
+  <div class="glass-card p-4 mb-4 border-warning">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge bg-warning text-dark fw-bold"><i class="fa-solid fa-crown me-1"></i> AUCTION HOST CONTROL PANEL</span>
+          <span class="badge bg-dark border border-secondary text-warning">{{ room.room_code }}</span>
+        </div>
+        <h2 class="text-white fw-bold mb-0">{{ room.room_name }}</h2>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('auction.live_auction', auction_id=room.id) }}" class="btn btn-gold">
+          <i class="fa-solid fa-tv me-1"></i> Live Arena
+        </a>
+        <a href="{{ url_for('auction.lobby', auction_id=room.id) }}" class="btn btn-stadium">
+          <i class="fa-solid fa-door-open me-1"></i> Lobby
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Command Buttons -->
+  <div class="glass-card p-3 mb-4">
+    <div class="row g-2">
+      <div class="col-6 col-md-3">
+        <button id="btnCmdHammer" class="btn btn-success w-100 py-2 fw-bold" title="Sell player to highest bidder">
+          <i class="fa-solid fa-gavel me-2"></i> Strike Hammer (Sold)
+        </button>
+      </div>
+      <div class="col-6 col-md-3">
+        <button id="btnCmdUnsold" class="btn btn-outline-danger w-100 py-2 fw-bold" title="Mark player unsold">
+          <i class="fa-solid fa-ban me-2"></i> Mark Unsold
+        </button>
+      </div>
+      <div class="col-6 col-md-3">
+        <button id="btnCmdSkip" class="btn btn-danger-glow w-100 py-2 fw-bold">
+          <i class="fa-solid fa-forward-step me-2"></i> Skip Player
+        </button>
+      </div>
+      <div class="col-6 col-md-3">
+        <a href="{{ url_for('auction.results', auction_id=room.id) }}" class="btn btn-stadium w-100 py-2 fw-bold">
+          <i class="fa-solid fa-chart-pie me-2 text-warning"></i> View Results
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 Pools & 12 Sets Overview Bento -->
+  <div class="glass-card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-layer-group text-warning"></i>
+        <h5 class="text-white fw-bold mb-0">Auction Pool & Set Status</h5>
+      </div>
+      <div class="badge bg-dark border border-warning text-warning">
+        Active Set: {{ pools_summary.current_set if pools_summary else 'Marquee Batsmen' }}
+      </div>
+    </div>
+
+    <div class="row g-2">
+      <div class="col-6 col-md-3">
+        <div class="p-2 rounded bg-dark border border-warning h-100">
+          <div class="d-flex justify-content-between">
+            <span class="badge badge-pool badge-marquee py-0 px-2" style="font-size: 0.7rem;">Marquee</span>
+            <span class="text-warning fw-bold small">{{ pools_summary.pools.Marquee.total if pools_summary else 37 }} Total</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mt-2" style="font-size: 0.75rem;">
+            <span>Sold: <strong class="text-success">{{ pools_summary.pools.Marquee.sold if pools_summary else 0 }}</strong></span>
+            <span>Pending: <strong class="text-warning">{{ pools_summary.pools.Marquee.pending if pools_summary else 37 }}</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-2 rounded bg-dark border border-info h-100">
+          <div class="d-flex justify-content-between">
+            <span class="badge badge-pool badge-capped py-0 px-2" style="font-size: 0.7rem;">Capped</span>
+            <span class="text-info fw-bold small">{{ pools_summary.pools.Capped.total if pools_summary else 188 }} Total</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mt-2" style="font-size: 0.75rem;">
+            <span>Sold: <strong class="text-success">{{ pools_summary.pools.Capped.sold if pools_summary else 0 }}</strong></span>
+            <span>Pending: <strong class="text-warning">{{ pools_summary.pools.Capped.pending if pools_summary else 188 }}</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-2 rounded bg-dark border border-success h-100">
+          <div class="d-flex justify-content-between">
+            <span class="badge badge-pool badge-uncapped py-0 px-2" style="font-size: 0.7rem;">Uncapped</span>
+            <span class="text-success fw-bold small">{{ pools_summary.pools.Uncapped.total if pools_summary else 75 }} Total</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mt-2" style="font-size: 0.75rem;">
+            <span>Sold: <strong class="text-success">{{ pools_summary.pools.Uncapped.sold if pools_summary else 0 }}</strong></span>
+            <span>Pending: <strong class="text-warning">{{ pools_summary.pools.Uncapped.pending if pools_summary else 75 }}</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-2 rounded bg-dark border border-secondary h-100 text-center d-flex flex-column justify-content-center">
+          <div class="text-muted small" style="font-size: 0.75rem;">Total Roster</div>
+          <div class="h5 fw-bold text-white mb-0">300 Players</div>
+          <div class="text-warning small" style="font-size: 0.75rem;">12 Structured Sets</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Player Queue Management -->
+    <div class="col-lg-8">
+      <div class="glass-card p-4 h-100">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <h4 class="text-white fw-bold mb-0">
+            <i class="fa-solid fa-list-ol text-warning me-2"></i>Auction Player Queue
+          </h4>
+          <span class="badge bg-dark border border-warning text-warning" id="queueCountBadge">{{ queue|length }} Players</span>
+        </div>
+
+        <!-- Filter Controls Toolbar -->
+        <div class="p-2 rounded bg-dark border border-secondary mb-3">
+          <div class="row g-2 align-items-center">
+            <!-- Pool Filter -->
+            <div class="col-6 col-sm-3">
+              <select id="filterPool" class="form-select form-select-sm">
+                <option value="all">All Pools</option>
+                <option value="marquee">👑 Marquee (37)</option>
+                <option value="capped">⭐ Capped (188)</option>
+                <option value="uncapped">🌱 Uncapped (75)</option>
+              </select>
+            </div>
+
+            <!-- Role Filter -->
+            <div class="col-6 col-sm-3">
+              <select id="filterRole" class="form-select form-select-sm">
+                <option value="all">All Categories</option>
+                <option value="batsman">Batsman</option>
+                <option value="bowler">Bowler</option>
+                <option value="all-rounder">All-rounder</option>
+                <option value="wicketkeeper">Wicketkeeper</option>
+              </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-6 col-sm-3">
+              <select id="filterStatus" class="form-select form-select-sm">
+                <option value="all">All Statuses</option>
+                <option value="current">Current</option>
+                <option value="pending">Pending</option>
+                <option value="sold">Sold</option>
+                <option value="unsold">Unsold</option>
+              </select>
+            </div>
+
+            <!-- Search input -->
+            <div class="col-6 col-sm-3">
+              <input type="text" id="queueSearchInput" class="form-control form-control-sm" placeholder="Filter player...">
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+          <table class="table table-dark table-hover table-striped align-middle mb-0" id="queueTable">
+            <thead>
+              <tr class="text-muted small">
+                <th>#</th>
+                <th>Player</th>
+                <th>Pool</th>
+                <th>Set</th>
+                <th>Role</th>
+                <th>Base Price</th>
+                <th>Status</th>
+                <th>Sale Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ap in queue %}
+                {% set pool_val = ap.pool if ap.pool else (ap.player.pool if ap.player else 'Capped') %}
+                {% set role_val = ap.player.role if ap.player else 'Batsman' %}
+                <tr class="queue-row" 
+                    data-pool="{{ pool_val|lower }}" 
+                    data-role="{{ role_val|lower|replace(' ', '')|replace('-', '') }}" 
+                    data-status="{{ ap.status|lower }}"
+                    data-name="{{ ap.player.name|lower if ap.player else '' }}">
+                  <td class="text-muted">{{ ap.order_index }}</td>
+                  <td>
+                    <div class="fw-bold text-white">{{ ap.player.name }}</div>
+                    <div class="text-muted small">{{ ap.player.country }}</div>
+                  </td>
+                  <td>
+                    {% if pool_val == 'Marquee' or ap.player.is_marquee %}
+                      <span class="badge badge-pool badge-marquee py-0 px-2" style="font-size: 0.7rem;">Marquee</span>
+                    {% elif pool_val == 'Uncapped' or ap.player.is_uncapped %}
+                      <span class="badge badge-pool badge-uncapped py-0 px-2" style="font-size: 0.7rem;">Uncapped</span>
+                    {% else %}
+                      <span class="badge badge-pool badge-capped py-0 px-2" style="font-size: 0.7rem;">Capped</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="badge badge-set py-0 px-2" style="font-size: 0.7rem;">
+                      {{ ap.set_name if ap.set_name else (ap.player.set_name if ap.player else '') }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge badge-role badge-{{ role_val|lower|replace(' ', '')|replace('-', '') }} py-0 px-2" style="font-size: 0.7rem;">
+                      {{ role_val }}
+                    </span>
+                  </td>
+                  <td>{{ ap.player.base_price|inr }}</td>
+                  <td>
+                    {% if ap.status == 'current' %}
+                      <span class="badge bg-danger pulse-gold">CURRENT</span>
+                    {% elif ap.status == 'sold' %}
+                      <span class="badge bg-success">SOLD</span>
+                    {% elif ap.status == 'unsold' %}
+                      <span class="badge bg-secondary">UNSOLD</span>
+                    {% else %}
+                      <span class="badge bg-dark text-muted border border-secondary">PENDING</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if ap.status == 'sold' %}
+                      <span class="text-warning fw-bold">{{ ap.sold_price|inr }}</span>
+                      <div class="small text-muted">{{ ap.winning_team.team_code if ap.winning_team else '' }}</div>
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Teams & Recent Bids -->
+    <div class="col-lg-4">
+      <!-- Teams Status -->
+      <div class="glass-card p-4 mb-4">
+        <h4 class="text-white fw-bold mb-3">
+          <i class="fa-solid fa-shield-halved text-warning me-2"></i>Franchise Standings
+        </h4>
+        <div class="d-flex flex-column gap-2" style="max-height: 250px; overflow-y: auto;">
+          {% for t in teams %}
+            <div class="p-2 rounded" style="background: rgba(7, 26, 54, 0.7); border-left: 3px solid {{ t.primary_color }};">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <span class="badge me-1" style="background: {{ t.primary_color }}">{{ t.team_code }}</span>
+                  <span class="fw-bold text-white small">{{ t.team_name }}</span>
+                  <div class="text-muted" style="font-size: 0.75rem;">Owner: {{ t.owner.username }}</div>
+                </div>
+                <div class="text-end">
+                  <div class="text-warning small fw-bold">{{ t.remaining_budget|inr }}</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">{{ t.squad_count }} bought</div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Recent Bids Stream -->
+      <div class="glass-card p-4">
+        <h4 class="text-white fw-bold mb-3">
+          <i class="fa-solid fa-clock-rotate-left text-warning me-2"></i>Recent Bids Log
+        </h4>
+        <div class="d-flex flex-column gap-2" style="max-height: 250px; overflow-y: auto;">
+          {% for b in recent_bids %}
+            <div class="p-2 rounded bg-dark border border-secondary small">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold text-white">{{ b.team.team_name if b.team else 'Team' }}</span>
+                <span class="text-warning fw-bold">{{ b.amount|inr }}</span>
+              </div>
+              <div class="text-muted" style="font-size: 0.75rem;">
+                On {{ b.player.name if b.player else 'Player' }} • {{ b.timestamp.strftime('%H:%M:%S') if b.timestamp else '' }}
+              </div>
+            </div>
+          {% else %}
+            <div class="text-muted small text-center py-3">No bids placed yet</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    window.auctionSocket.connect({{ room.id }}, "{{ current_user.username }}");
+
+    const btnCmdHammer = document.getElementById("btnCmdHammer");
+    if (btnCmdHammer) {
+      btnCmdHammer.addEventListener("click", () => {
+        window.auctionSocket.emit("host_hammer", { room_id: {{ room.id }} });
+        showToast("Struck auction hammer! Concluding player...", "success");
+      });
+    }
+
+    const btnCmdUnsold = document.getElementById("btnCmdUnsold");
+    if (btnCmdUnsold) {
+      btnCmdUnsold.addEventListener("click", () => {
+        if (confirm("Mark current player as Unsold and advance?")) {
+          window.auctionSocket.emit("host_unsold", { room_id: {{ room.id }} });
+          showToast("Marked player as Unsold", "info");
+        }
+      });
+    }
+
+    document.getElementById("btnCmdSkip").addEventListener("click", () => {
+      if (confirm("Are you sure you want to skip this player?")) {
+        window.auctionSocket.emit("skip_player", { room_id: {{ room.id }} });
+        showToast("Skipped current player", "info");
+      }
+    });
+
+    // Client-side queue filter logic
+    const filterPool = document.getElementById("filterPool");
+    const filterRole = document.getElementById("filterRole");
+    const filterStatus = document.getElementById("filterStatus");
+    const queueSearchInput = document.getElementById("queueSearchInput");
+    const rows = document.querySelectorAll(".queue-row");
+    const queueCountBadge = document.getElementById("queueCountBadge");
+
+    function applyQueueFilters() {
+      const poolVal = filterPool ? filterPool.value.toLowerCase() : "all";
+      const roleVal = filterRole ? filterRole.value.toLowerCase().replace(/[^a-z]/g, "") : "all";
+      const statusVal = filterStatus ? filterStatus.value.toLowerCase() : "all";
+      const searchVal = queueSearchInput ? queueSearchInput.value.toLowerCase().trim() : "";
+
+      let visible = 0;
+      rows.forEach(r => {
+        const rowPool = r.getAttribute("data-pool") || "";
+        const rowRole = r.getAttribute("data-role") || "";
+        const rowStatus = r.getAttribute("data-status") || "";
+        const rowName = r.getAttribute("data-name") || "";
+
+        let matchPool = (poolVal === "all") || (rowPool === poolVal);
+        let matchRole = (roleVal === "all") || (rowRole === roleVal);
+        let matchStatus = (statusVal === "all") || (rowStatus === statusVal);
+        let matchSearch = !searchVal || rowName.includes(searchVal);
+
+        if (matchPool && matchRole && matchStatus && matchSearch) {
+          r.style.display = "";
+          visible++;
+        } else {
+          r.style.display = "none";
+        }
+      });
+
+      if (queueCountBadge) {
+        queueCountBadge.textContent = `${visible} Players`;
+      }
+    }
+
+    if (filterPool) filterPool.addEventListener("change", applyQueueFilters);
+    if (filterRole) filterRole.addEventListener("change", applyQueueFilters);
+    if (filterStatus) filterStatus.addEventListener("change", applyQueueFilters);
+    if (queueSearchInput) queueSearchInput.addEventListener("input", applyQueueFilters);
+  });
+</script>
+{% endblock %}

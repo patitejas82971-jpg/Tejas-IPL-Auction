@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Join Auction - IPL Auction Simulator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="glass-card p-4 p-md-5 border-warning">
+        <div class="text-center mb-4">
+          <div class="team-logo-badge mx-auto mb-3" style="background: linear-gradient(135deg, #F5B841, #FF7A00); color: #071A36;">
+            <i class="fa-solid fa-ticket fs-4"></i>
+          </div>
+          <h2 class="text-white fw-bold mb-1">Join IPL Auction</h2>
+          <p class="text-muted small">Enter the 6-character room code shared by your host</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auction.join_auction') }}">
+          <div class="mb-3">
+            <label for="room_code" class="form-label">Room Code</label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text bg-dark border-secondary text-warning">
+                <i class="fa-solid fa-key"></i>
+              </span>
+              <input type="text" class="form-control room-code-input text-uppercase fw-black letter-spacing text-center fs-3" id="room_code" name="room_code" placeholder="e.g. IPL789" required maxlength="8" autofocus value="{{ code_param }}">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Joining As</label>
+            <div class="input-group">
+              <span class="input-group-text bg-dark border-secondary text-success">
+                <i class="fa-solid fa-circle-user"></i>
+              </span>
+              <input type="text" class="form-control bg-dark text-muted" value="{{ current_user.username }}" disabled>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-gold btn-lg w-100 py-3 mb-3">
+            <i class="fa-solid fa-right-to-bracket me-2"></i> Join Auction Lobby
+          </button>
+
+          <div class="text-center">
+            <a href="{{ url_for('auction.dashboard') }}" class="text-muted small text-decoration-none">
+              <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

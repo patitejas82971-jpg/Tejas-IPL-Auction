@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Real-Time Multiplayer IPL Auction Simulator - Build your dream squad with friends in synchronized live bidding.">
+  <title>{% block title %}IPL Auction Simulator{% endblock %} | Live Multiplayer</title>
+  
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auction.css') }}">
+  
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <!-- Fullscreen Confetti Canvas for Celebrations -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Navigation Header -->
+  <nav class="navbar navbar-expand-lg navbar-ipl sticky-top">
+    <div class="container-fluid px-lg-4">
+      <a class="navbar-brand" href="{{ url_for('auction.index') }}">
+        <div class="brand-icon-shield">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <div>
+          <span>IPL <span class="text-gradient-gold">AUCTION</span></span>
+          <span class="brand-badge ms-1">2026 LIVE</span>
+        </div>
+      </a>
+      
+      <button class="navbar-toggler text-white border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fa-solid fa-bars fs-4 text-warning"></i>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+          {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'auction.dashboard' %}active{% endif %}" href="{{ url_for('auction.dashboard') }}">
+                <i class="fa-solid fa-gauge-high me-1 text-gold"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'auction.create_auction' %}active{% endif %}" href="{{ url_for('auction.create_auction') }}">
+                <i class="fa-solid fa-plus-circle me-1 text-gold"></i> Create Room
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'auction.join_auction' %}active{% endif %}" href="{{ url_for('auction.join_auction') }}">
+                <i class="fa-solid fa-right-to-bracket me-1 text-cyan"></i> Join Room
+              </a>
+            </li>
+          {% endif %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'player.players_page' %}active{% endif %}" href="{{ url_for('player.players_page') }}">
+              <i class="fa-solid fa-users me-1 text-info"></i> Players Pool
+            </a>
+          </li>
+          {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'auction.history' %}active{% endif %}" href="{{ url_for('auction.history') }}">
+                <i class="fa-solid fa-clock-rotate-left me-1 text-muted"></i> History
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+
+        <!-- Right Side Nav Tools -->
+        <div class="d-flex align-items-center gap-2">
+          <!-- Server Status Indicator -->
+          <div class="d-none d-md-flex align-items-center gap-2 px-2 py-1 rounded-pill bg-dark border border-secondary me-2">
+            <span class="status-dot ready"></span>
+            <span class="small text-muted fw-semibold">Live Server</span>
+          </div>
+
+          <!-- Audio Toggle Button -->
+          <button id="soundToggleBtn" class="btn btn-stadium px-3 py-2" title="Toggle Auction Sound Effects" aria-label="Toggle Sound Effects">
+            <i class="fa-solid fa-volume-high text-gold"></i>
+          </button>
+
+          {% if current_user.is_authenticated %}
+            <div class="dropdown">
+              <button class="btn btn-outline-gold dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-circle-user fs-5"></i>
+                <span class="d-none d-md-inline fw-semibold">{{ current_user.username }}</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary shadow-lg">
+                <li>
+                  <a class="dropdown-item text-light py-2" href="{{ url_for('auth.profile') }}">
+                    <i class="fa-solid fa-id-badge text-warning me-2"></i> User Profile
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item text-light py-2" href="{{ url_for('auction.dashboard') }}">
+                    <i class="fa-solid fa-shield-halved text-info me-2"></i> My Franchises
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider border-secondary"></li>
+                <li>
+                  <a class="dropdown-item text-danger py-2" href="{{ url_for('auth.logout') }}">
+                    <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Logout
+                  </a>
+                </li>
+              </ul>
+            </div>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-stadium px-3">Login</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-gold px-3">Register</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Broadcast Ticker Tape -->
+  <div class="auction-ticker-bar py-1 d-none d-sm-block">
+    <div class="container-fluid px-lg-4 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <span class="ticker-item"><i class="fa-solid fa-circle text-danger fs-6 pulse-gold"></i> MEGA AUCTION 2026</span>
+        <span class="ticker-item text-muted">•</span>
+        <span class="ticker-item"><i class="fa-solid fa-shield-halved text-gold"></i> 10 FRANCHISES</span>
+        <span class="ticker-item text-muted">•</span>
+        <span class="ticker-item"><i class="fa-solid fa-coins text-warning"></i> ₹120 CR SALARY PURSE</span>
+        <span class="ticker-item text-muted">•</span>
+        <span class="ticker-item"><i class="fa-solid fa-bolt text-cyan"></i> LIVE SYNCHRONIZED BIDDING</span>
+      </div>
+      <div class="small text-muted d-none d-md-block">
+        <i class="fa-solid fa-robot text-gold me-1"></i> AI Powered by Gemini
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash Alerts Container -->
+  <div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'danger' else 'danger' }} alert-dismissible fade show alert-ipl shadow-sm" role="alert">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid {% if category == 'success' %}fa-circle-check text-success{% elif category == 'danger' %}fa-triangle-exclamation text-danger{% else %}fa-circle-info text-info{% endif %} fs-5"></i>
+              <div>{{ message }}</div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Dynamic Toast Container for Live Alerts -->
+  <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
+
+  <!-- Main View Block -->
+  <main class="flex-grow-1 py-4">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Global Footer -->
+  <footer>
+    <div class="container text-center">
+      <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
+        <span class="fw-bold text-white"><i class="fa-solid fa-trophy text-warning me-1"></i> IPL Auction Simulator</span>
+        <span class="text-secondary">•</span>
+        <span>Real-Time Multiplayer Platform</span>
+        <span class="text-secondary">•</span>
+        <span class="badge bg-dark text-warning border border-warning">Mega Auction 2026</span>
+      </div>
+      <p class="text-muted small mb-0">
+        Built with Python Flask, Flask-SocketIO, SQLAlchemy, and Google Gemini AI. Realistic simulation for cricket enthusiasts.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Socket.IO v4 Client -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  
+  <!-- Chart.js v4 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <!-- Core App Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/socket.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

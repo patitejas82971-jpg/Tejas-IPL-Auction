@@ -1,0 +1,112 @@
+[
+  {
+    "team_code": "CSK",
+    "team_name": "Chennai Super Kings",
+    "short_name": "Chennai",
+    "primary_color": "#F9CD05",
+    "secondary_color": "#114297",
+    "text_color": "#000000",
+    "logo_icon": "fa-shield-halved",
+    "city": "Chennai",
+    "titles": 5
+  },
+  {
+    "team_code": "MI",
+    "team_name": "Mumbai Indians",
+    "short_name": "Mumbai",
+    "primary_color": "#004BA0",
+    "secondary_color": "#D1AB3E",
+    "text_color": "#FFFFFF",
+    "logo_icon": "fa-hurricane",
+    "city": "Mumbai",
+    "titles": 5
+  },
+  {
+    "team_code": "RCB",
+    "team_name": "Royal Challengers Bengaluru",
+    "short_name": "Bengaluru",
+    "primary_color": "#D41226",
+    "secondary_color": "#000000",
+    "text_color": "#FFFFFF",
+    "logo_icon": "fa-shield-cat",
+    "city": "Bengaluru",
+    "titles": 2
+  },
+  {
+    "team_code": "KKR",
+    "team_name": "Kolkata Knight Riders",
+    "short_name": "Kolkata",
+    "primary_color": "#3A225D",
+    "secondary_color": "#F1BF43",
+    "text_color": "#FFFFFF",
+    "logo_icon": "fa-helmet-battle",
+    "city": "Kolkata",
+    "titles": 3
+  },
+  {
+    "team_code": "SRH",
+    "team_name": "Sunrisers Hyderabad",
+    "short_name": "Hyderabad",
+    "primary_color": "#F26522",
+    "secondary_color": "#000000",
+    "text_color": "#FFFFFF",
+    "logo_icon": "fa-sun",
+    "city": "Hyderabad",
+    "titles": 1
+  },
+  {
+    "team_code": "RR",
+    "team_name": "Rajasthan Royals",
+    "short_name": "Rajasthan",
+    "primary_color": "#EA1A85",
+    "secondary_color": "#001D48",
+    "text_color": "#FFFFFF",
+    "logo_icon": "fa-crown",
+    "city": "Jaipur",
+    "titles": 1
+  },
+  {
+    "team_code": "DC",
+    "team_name": "Delhi Capitals",
+    "short_name": "Delhi",
+    "primary_color": "#004C97",
+    "secondary_color": "#DC143C",
+    "text_color": "#FFFFFF",
+    "logo_icon": "fa-monument",
+    "city": "Delhi",
+    "titles": 0
+  },
+  {
+    "team_code": "PBKS",
+    "team_name": "Punjab Kings",
+    "short_name": "Punjab",
+    "primary_color": "#ED1B24",
+    "secondary_color": "#DCDCDC",
+    "text_color": "#FFFFFF",
+    "logo_icon": "fa-lion",
+    "city": "Mohali",
+    "titles": 0
+  },
+  {
+    "team_code": "GT",
+    "team_name": "Gujarat Titans",
+    "short_name": "Gujarat",
+    "primary_color": "#1B2133",
+    "secondary_color": "#D1AB3E",
+    "text_color": "#FFFFFF",
+    "logo_icon": "fa-bolt-lightning",
+    "city": "Ahmedabad",
+    "titles": 1
+  },
+  {
+    "team_code": "LSG",
+    "team_name": "Lucknow Super Giants",
+    "short_name": "Lucknow",
+    "primary_color": "#0057B7",
+    "secondary_color": "#A2E2F7",
+    "text_color": "#FFFFFF",
+    "logo_icon": "fa-dove",
+    "city": "Lucknow",
+    "titles": 0
+  }
+]

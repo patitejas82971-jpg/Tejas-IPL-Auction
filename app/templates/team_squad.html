@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}My Squad: {{ team.team_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+  <!-- Team Profile Header -->
+  <div class="glass-card p-4 mb-4" style="border-left: 8px solid {{ team.primary_color }};">
+    <div class="row align-items-center g-3">
+      <div class="col-md-7">
+        <div class="d-flex align-items-center gap-3">
+          <div class="team-logo-badge" style="background: {{ team.primary_color }}; color: #FFFFFF; width: 64px; height: 64px; font-size: 1.8rem;">
+            <i class="fa-solid {{ team.logo_icon }}"></i>
+          </div>
+          <div>
+            <h2 class="text-white fw-bold mb-1">{{ team.team_name }}</h2>
+            <div class="text-muted small">
+              <span class="badge" style="background: {{ team.primary_color }};">{{ team.team_code }}</span>
+              <span class="ms-2">Owned by <strong>{{ team.owner.username }}</strong></span>
+              <span class="mx-2">•</span>
+              <span>Room: <strong>{{ room.room_name }}</strong> ({{ room.room_code }})</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-5 text-md-end">
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+          <button id="btnAiAnalyzeSquad" class="btn btn-gold">
+            <i class="fa-solid fa-robot me-1"></i> AI Squad Analysis
+          </button>
+          <a href="{{ url_for('auction.live_auction', auction_id=room.id) }}" class="btn btn-outline-gold">
+            <i class="fa-solid fa-tv me-1"></i> Live Arena
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Statistics Tiles -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+        <div>
+          <div class="stat-value text-warning">{{ team.remaining_budget|inr }}</div>
+          <div class="stat-label">Purse Remaining</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+        <div>
+          <div class="stat-value text-white">{{ team.spent_budget|inr }}</div>
+          <div class="stat-label">Purse Spent</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+        <div>
+          <div class="stat-value text-white">{{ team.squad_count }}/{{ room.get_rules().max_squad_size }}</div>
+          <div class="stat-label">Squad Size</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-icon"><i class="fa-solid fa-earth-americas"></i></div>
+        <div>
+          <div class="stat-value text-info">{{ team.overseas_count }}/{{ room.get_rules().max_overseas }}</div>
+          <div class="stat-label">Overseas Stars</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Left Column: Squad Table -->
+    <div class="col-lg-8">
+      <div class="glass-card p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="text-white fw-bold mb-0">
+            <i class="fa-solid fa-clipboard-user text-warning me-2"></i>Signed Squad Players
+          </h4>
+          <span class="badge bg-dark border border-warning text-warning">{{ team.squad_count }} Players</span>
+        </div>
+
+        {% if team.squad_entries %}
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead>
+                <tr class="text-muted small">
+                  <th>Player</th>
+                  <th>Role</th>
+                  <th>Country</th>
+                  <th>Rating</th>
+                  <th>Price Paid</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for entry in team.squad_entries %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <img src="{{ entry.player.image_url }}" alt="" class="rounded-circle" style="width: 36px; height: 36px; background: #071A36;">
+                        <span class="fw-bold text-white">{{ entry.player.name }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge badge-role badge-{{ entry.player.role|lower|replace(' ', '')|replace('-', '') }}">
+                        {{ entry.player.role }}
+                      </span>
+                    </td>
+                    <td>
+                      {% if entry.player.is_overseas %}
+                        <span class="badge badge-overseas"><i class="fa-solid fa-earth-americas me-1"></i> {{ entry.player.country }}</span>
+                      {% else %}
+                        <span class="badge badge-gold">{{ entry.player.country }}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <span class="badge bg-dark border border-secondary text-warning fw-bold">{{ entry.player.rating }}</span>
+                    </td>
+                    <td class="text-warning fw-bold">
+                      {{ entry.purchase_price|inr }}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="fa-solid fa-user-slash fs-1 mb-3 opacity-50"></i>
+            <h5 class="text-white">No players signed yet</h5>
+            <p class="small">Place winning bids in the live auction to build your roster!</p>
+            <a href="{{ url_for('auction.live_auction', auction_id=room.id) }}" class="btn btn-gold mt-2">
+              Go to Live Auction
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Chart.js Role Distribution & Squad Health -->
+    <div class="col-lg-4">
+      <div class="glass-card p-4 h-100">
+        <h4 class="text-white fw-bold mb-3">
+          <i class="fa-solid fa-chart-pie text-warning me-2"></i>Role Distribution
+        </h4>
+
+        <div style="height: 220px;" class="mb-3 position-relative">
+          <canvas id="squadRoleCanvas"></canvas>
+        </div>
+
+        <div class="p-3 rounded-3 bg-dark border border-secondary small">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted"><i class="fa-solid fa-baseball text-primary me-2"></i>Batsmen:</span>
+            <span class="fw-bold text-white">{{ team.get_role_distribution().get('Batsman', 0) }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted"><i class="fa-solid fa-bowling-ball text-danger me-2"></i>Bowlers:</span>
+            <span class="fw-bold text-white">{{ team.get_role_distribution().get('Bowler', 0) }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted"><i class="fa-solid fa-wand-magic-sparkles text-info me-2"></i>All-rounders:</span>
+            <span class="fw-bold text-white">{{ team.get_role_distribution().get('All-rounder', 0) }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted"><i class="fa-solid fa-mitten text-success me-2"></i>Wicketkeepers:</span>
+            <span class="fw-bold text-white">{{ team.get_role_distribution().get('Wicketkeeper', 0) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gemini AI Squad Analysis Modal -->
+<div class="modal fade" id="squadAiModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content glass-card border-warning text-white" style="background: #071A36;">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title d-flex align-items-center gap-2">
+          <i class="fa-solid fa-robot text-warning"></i>
+          <span>Gemini AI Tactical Squad Evaluation</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div id="squadAiLoading" class="text-center py-5">
+          <div class="spinner-border text-warning" role="status"></div>
+          <div class="text-muted small mt-2">Evaluating team balance, depth, and optimal Playing XI...</div>
+        </div>
+
+        <div id="squadAiContent" class="d-none">
+          <div id="squadAiNotice" class="text-warning small fst-italic mb-3"></div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="p-3 bg-dark rounded border border-secondary h-100">
+                <h6 class="text-success fw-bold mb-2"><i class="fa-solid fa-circle-check me-1"></i> Squad Strengths</h6>
+                <ul id="squadAiStrengths" class="small text-light mb-0 list-unstyled"></ul>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 bg-dark rounded border border-secondary h-100">
+                <h6 class="text-danger fw-bold mb-2"><i class="fa-solid fa-circle-exclamation me-1"></i> Vulnerabilities</h6>
+                <ul id="squadAiWeaknesses" class="small text-light mb-0 list-unstyled"></ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-dark rounded border border-secondary mb-3">
+            <h6 class="text-warning fw-bold mb-2"><i class="fa-solid fa-star me-1"></i> Suggested Playing XI</h6>
+            <div id="squadAiXI" class="d-flex flex-wrap gap-2"></div>
+          </div>
+
+          <div class="p-2 rounded bg-dark border border-secondary">
+            <span class="small text-muted fw-bold">Coach Verdict:</span>
+            <span id="squadAiVerdict" class="small text-white"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="button" class="btn btn-stadium" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/teams.js') }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Render Chart.js Donut
+    const roleCounts = {{ team.get_role_distribution()|tojson }};
+    initSquadRoleChart("squadRoleCanvas", roleCounts);
+
+    // AI Squad Analysis Handler
+    const btnAi = document.getElementById("btnAiAnalyzeSquad");
+    if (btnAi) {
+      btnAi.addEventListener("click", async () => {
+        const modal = new bootstrap.Modal(document.getElementById("squadAiModal"));
+        modal.show();
+
+        const loadingEl = document.getElementById("squadAiLoading");
+        const contentEl = document.getElementById("squadAiContent");
+        loadingEl.classList.remove("d-none");
+        contentEl.classList.add("d-none");
+
+        try {
+          const res = await fetch("/api/ai/team-analysis", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ team_id: {{ team.id }} })
+          });
+          const data = await res.json();
+          if (data.success && data.analysis) {
+            const an = data.analysis;
+            document.getElementById("squadAiNotice").textContent = an.notice || "";
+            document.getElementById("squadAiVerdict").textContent = an.recommendation || "";
+            
+            document.getElementById("squadAiStrengths").innerHTML = (an.strengths || [])
+              .map(s => `<li class="mb-1"><i class="fa-solid fa-check text-success me-1"></i>${s}</li>`).join("");
+            
+            document.getElementById("squadAiWeaknesses").innerHTML = (an.weaknesses || [])
+              .map(w => `<li class="mb-1"><i class="fa-solid fa-triangle-exclamation text-danger me-1"></i>${w}</li>`).join("");
+
+            document.getElementById("squadAiXI").innerHTML = (an.suggested_xi || [])
+              .map(p => `<span class="badge bg-secondary p-2">${p}</span>`).join("");
+          }
+        } catch (e) {
+          console.warn("Error fetching AI squad analysis:", e);
+          document.getElementById("squadAiNotice").textContent = "AI insights are temporarily unavailable. You can continue your auction normally.";
+        } finally {
+          loadingEl.classList.add("d-none");
+          contentEl.classList.remove("d-none");
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}
